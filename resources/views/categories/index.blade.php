@@ -19,36 +19,55 @@
         <x-search-box :action="route('admin.categories.index')" :placeholder="__('app.search_categories')" />
     </div>
 
-    <div class="row g-3">
-        @forelse ($categories as $category)
-            <div class="col-12 col-sm-6 col-lg-4">
-                <x-doc-card
-                    :code="__('app.category')"
-                    :title="$category->name"
-                    :meta="$category->documentFolder?->name ?? __('app.global_category')"
-                    :badges="$category->is_default ? [__('app.default') => 'badge-ready'] : []">
-                    <x-slot:actions>
-                        <a href="{{ route('admin.categories.edit', $category) }}" class="btn-pin">
-                            {{ __('app.edit') }}
-                        </a>
-                        @can('delete', $category)
-                            <form method="POST" action="{{ route('admin.categories.destroy', $category) }}"
-                                  onsubmit="return confirm('{{ __('app.confirm_delete') }}')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-pin btn-pin-danger">{{ __('app.delete') }}</button>
-                            </form>
-                        @endcan
-                    </x-slot:actions>
-                </x-doc-card>
+    <div class="uploads-card mt-3">
+        @if ($categories->isEmpty())
+            <div class="uploads-empty">
+                <div class="empty-title">{{ __('app.no_categories') }}</div>
             </div>
-        @empty
-            <div class="col-12">
-                <div class="empty-state">
-                    <div class="glyph"><x-icon name="search" /></div>
-                    <div class="empty-title">{{ __('app.no_categories') }}</div>
-                </div>
-            </div>
-        @endforelse
+        @else
+            <table class="uploads-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('app.name') }}</th>
+                    <th>{{ __('app.document_folder') }}</th>
+                    <th>{{ __('app.documents') }}</th>
+                    <th>{{ __('app.order') }}</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach ($categories as $category)
+                    <tr>
+                        <td class="row-num">{{ $loop->iteration + ($categories->currentPage() - 1) * $categories->perPage() }}</td>
+                        <td>
+                            {{ $category->name }}
+                            @if ($category->is_default)
+                                <span class="badge-soft badge-ready">{{ __('app.default') }}</span>
+                            @endif
+                        </td>
+                        <td>{{ $category->documentFolder?->name ?? __('app.global_category') }}</td>
+                        <td>{{ trans_choice('app.document_count', $category->documents_count) }}</td>
+                        <td>{{ $category->order }}</td>
+                        <td>
+                            <div class="d-flex gap-2 justify-content-end align-items-center">
+                                <a href="{{ route('admin.categories.edit', $category) }}" class="btn-pin">
+                                    {{ __('app.edit') }}
+                                </a>
+                                @can('delete', $category)
+                                    <form method="POST" action="{{ route('admin.categories.destroy', $category) }}"
+                                          onsubmit="return confirm('{{ __('app.confirm_delete') }}')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn-pin btn-pin-danger">{{ __('app.delete') }}</button>
+                                    </form>
+                                @endcan
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        @endif
     </div>
 
     {{ $categories->links() }}

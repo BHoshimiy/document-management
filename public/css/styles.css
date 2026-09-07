@@ -310,10 +310,14 @@
     background:var(--paper);
     border:1px solid var(--line);
     border-radius:14px;
-    overflow:hidden;
+    /* auto (not hidden) so a wide table scrolls on narrow screens;
+       it still clips the table to the rounded corners */
+    overflow-x:auto;
   }
   .uploads-table{
     width:100%;
+    /* forces the overflow instead of letting columns squash unreadably */
+    min-width:640px;
     border-collapse:collapse;
     font-size:.88rem;
   }

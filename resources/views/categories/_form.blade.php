@@ -26,15 +26,6 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label" for="slug">{{ __('app.slug') }}</label>
-            <input type="text" id="slug" name="slug" value="{{ old('slug', $category->slug) }}"
-                   class="form-control @error('slug') is-invalid @enderror"
-                   placeholder="{{ __('app.slug_hint') }}">
-            @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            <div class="form-hint">{{ __('app.slug_help') }}</div>
-        </div>
-
-        <div class="mb-3">
             <label class="form-label" for="document_folder_id">{{ __('app.document_folder') }}</label>
             <select id="document_folder_id" name="document_folder_id"
                     class="form-select @error('document_folder_id') is-invalid @enderror">

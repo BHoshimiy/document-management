@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentFolderController;
 use App\Http\Controllers\MenuController;
@@ -35,7 +36,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'active.user', 'locale'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    Route::get('/', [MenuController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Standards (menus) and their folders — the client-facing browse flow
     Route::get('menus/{menu:slug}', [MenuController::class, 'show'])->name('menus.show');
@@ -66,7 +67,11 @@ Route::middleware(['auth', 'active.user', 'locale'])->group(function () {
             ->except(['show'])
             ->parameters(['folders' => 'folder']);
 
-        Route::resource('menus', MenuController::class)->except(['index', 'show']);
-        Route::resource('companies', CompanyController::class)->only(['index', 'show']);
+        Route::resource('menus', MenuController::class)->except(['show']);
+        Route::post('menus/reorder', [MenuController::class, 'reorder'])
+            ->name('menus.reorder');
+
+        Route::resource('companies', CompanyController::class)
+            ->only(['index', 'show', 'edit', 'update', 'destroy']);
     });
 });

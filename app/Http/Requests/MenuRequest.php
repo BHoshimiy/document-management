@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Menu;
+use App\Support\Slug;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class MenuRequest extends FormRequest
 {
@@ -17,22 +17,24 @@ class MenuRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('menu')?->id;
-
         return [
             'name' => ['required', 'array'],
             'name.en' => ['required', 'string', 'max:255'],
             'name.ru' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'nullable', 'string', 'max:255', 'alpha_dash',
-                Rule::unique('menus', 'slug')->ignore($id)->whereNull('deleted_at'),
-            ],
+            'slug' => ['required', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
+    /** The slug is system-generated from the English name, never posted. */
     protected function prepareForValidation(): void
     {
-        $this->merge(['slug' => $this->slug ?: Str::slug((string) $this->input('name.en'))]);
+        $this->merge([
+            'slug' => Slug::uniqueFor(
+                Menu::withTrashed(),
+                (string) $this->input('name.en'),
+                $this->route('menu')?->id,
+            ),
+        ]);
     }
 }

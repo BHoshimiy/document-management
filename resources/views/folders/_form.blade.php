@@ -47,14 +47,6 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label" for="slug">{{ __('app.slug') }}</label>
-            <input type="text" id="slug" name="slug" value="{{ old('slug', $folder->slug) }}"
-                   class="form-control @error('slug') is-invalid @enderror">
-            @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            <div class="form-hint">{{ __('app.slug_help') }}</div>
-        </div>
-
-        <div class="mb-3">
             <label class="form-label" for="order">{{ __('app.order') }}</label>
             <input type="number" id="order" name="order" min="0" value="{{ old('order', $folder->order) }}"
                    class="form-control @error('order') is-invalid @enderror">

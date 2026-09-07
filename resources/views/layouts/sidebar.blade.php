@@ -1,6 +1,6 @@
 <aside class="sidebar">
     <div>
-        <div class="brand">icofex</div>
+        <div class="brand">Certificate Center</div>
         <div class="brand-sub">{!! __('app.brand_sub') !!}</div>
     </div>
 
@@ -37,6 +37,10 @@
                     <x-icon name="chevron" />
                 </summary>
                 <div class="submenu">
+                    <a href="{{ route('admin.menus.index') }}"
+                       class="submenu-item {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
+                        {{ __('app.menu') }}
+                    </a>
                     <a href="{{ route('admin.categories.index') }}"
                        class="submenu-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                         {{ __('app.category') }}

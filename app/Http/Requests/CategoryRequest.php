@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Category;
+use App\Support\Slug;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
@@ -17,26 +17,26 @@ class CategoryRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('category')?->id;
-
         return [
             'name' => ['required', 'array'],
             'name.en' => ['required', 'string', 'max:255'],
             'name.ru' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'nullable', 'string', 'max:255', 'alpha_dash',
-                Rule::unique('categories', 'slug')->ignore($id)->whereNull('deleted_at'),
-            ],
+            'slug' => ['required', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'is_default' => ['boolean'],
             'document_folder_id' => ['nullable', 'integer', 'exists:document_folders,id'],
         ];
     }
 
+    /** The slug is system-generated from the English name, never posted. */
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'slug' => $this->slug ?: Str::slug((string) $this->input('name.en')),
+            'slug' => Slug::uniqueFor(
+                Category::withTrashed(),
+                (string) $this->input('name.en'),
+                $this->route('category')?->id,
+            ),
             'is_default' => $this->boolean('is_default'),
         ]);
     }

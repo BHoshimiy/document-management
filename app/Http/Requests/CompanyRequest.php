@@ -16,7 +16,10 @@ class CompanyRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('company')?->id;
+        // admin edits bind {company}; the profile route has no parameter, so fall
+        // back to the signed-in user's own company. company() (not ->company) keeps
+        // this off the lazy-loading path that Model::shouldBeStrict() forbids.
+        $id = $this->route('company')->id ?? $this->user()?->company()->value('id');
 
         return [
             'name' => ['required', 'string', 'max:255'],

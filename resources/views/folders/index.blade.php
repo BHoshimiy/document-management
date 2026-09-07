@@ -14,27 +14,53 @@
         </x-slot:action>
     </x-page-header>
 
-    <div class="row g-3">
-        @forelse ($folders as $folder)
-            <div class="col-12 col-sm-6 col-lg-4">
-                <x-doc-card
-                    :code="$folder->code"
-                    :title="$folder->name"
-                    :meta="$folder->menu?->name . ' · ' . trans_choice('app.document_count', $folder->documents_count)">
-                    <x-slot:actions>
-                        <a href="{{ route('admin.folders.edit', $folder) }}" class="btn-pin">{{ __('app.edit') }}</a>
-                        <a href="{{ route('folders.show', $folder) }}" class="btn-open">{{ __('app.view') }}</a>
-                    </x-slot:actions>
-                </x-doc-card>
+    <div class="uploads-card mt-3">
+        @if ($folders->isEmpty())
+            <div class="uploads-empty">
+                <div class="empty-title">{{ __('app.no_folders') }}</div>
             </div>
-        @empty
-            <div class="col-12">
-                <div class="empty-state">
-                    <div class="glyph"><x-icon name="search" /></div>
-                    <div class="empty-title">{{ __('app.no_folders') }}</div>
-                </div>
-            </div>
-        @endforelse
+        @else
+            <table class="uploads-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('app.code') }}</th>
+                    <th>{{ __('app.name') }}</th>
+                    <th>{{ __('app.standard') }}</th>
+                    <th>{{ __('app.documents') }}</th>
+                    <th>{{ __('app.order') }}</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach ($folders as $folder)
+                    <tr>
+                        <td class="row-num">{{ $loop->iteration + ($folders->currentPage() - 1) * $folders->perPage() }}</td>
+                        <td><span class="type-chip">{{ $folder->code }}</span></td>
+                        <td>{{ $folder->name }}</td>
+                        <td>{{ $folder->menu?->name }}</td>
+                        <td>{{ trans_choice('app.document_count', $folder->documents_count) }}</td>
+                        <td>{{ $folder->order }}</td>
+                        <td>
+                            <div class="d-flex gap-2 justify-content-end align-items-center">
+                                <a href="{{ route('admin.folders.edit', $folder) }}" class="btn-pin">
+                                    {{ __('app.edit') }}
+                                </a>
+                                <a href="{{ route('folders.show', $folder) }}" class="btn-open">{{ __('app.view') }}</a>
+                                @can('delete', $folder)
+                                    <form method="POST" action="{{ route('admin.folders.destroy', $folder) }}"
+                                          onsubmit="return confirm('{{ __('app.confirm_delete') }}')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn-pin btn-pin-danger">{{ __('app.delete') }}</button>
+                                    </form>
+                                @endcan
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        @endif
     </div>
 
     {{ $folders->links() }}

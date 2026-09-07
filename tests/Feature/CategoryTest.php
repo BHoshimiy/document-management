@@ -47,11 +47,11 @@ it('updates a category', function () {
     $this->actingAs(User::factory()->admin()->create())
         ->put(route('admin.categories.update', $category), [
             'name' => ['en' => 'Renamed', 'ru' => 'Переименовано'],
-            'slug' => 'renamed',
         ])
         ->assertRedirect(route('admin.categories.index'));
 
-    expect($category->refresh()->translate('name', 'ru'))->toBe('Переименовано');
+    expect($category->refresh()->translate('name', 'ru'))->toBe('Переименовано')
+        ->and($category->slug)->toBe('renamed');
 });
 
 it('refuses to delete a category that still has documents', function () {
@@ -69,4 +69,15 @@ it('never deletes a default category', function () {
     $this->actingAs(User::factory()->admin()->create())
         ->delete(route('admin.categories.destroy', $category))
         ->assertForbidden();
+});
+
+it('renders the categories index as a table', function () {
+    Category::factory()->create(['name' => ['en' => 'Staff files', 'ru' => 'Личные дела']]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.categories.index'))
+        ->assertOk()
+        ->assertSee('uploads-table')
+        ->assertDontSee('doc-card')
+        ->assertSee('Staff files');
 });

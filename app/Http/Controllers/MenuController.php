@@ -7,23 +7,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\MenuRequest;
 use App\Models\Menu;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MenuController extends Controller
 {
-    /** Dashboard: the template library — every folder across every standard. */
-    public function index(): View
-    {
-        $menus = Menu::query()
-            ->ordered()
-            ->with(['documentFolders' => fn ($q) => $q->ordered()->withCount('documents')])
-            ->get();
-
-        $categories = \App\Models\Category::query()->ordered()->get();
-
-        return view('dashboard.index', compact('menus', 'categories'));
-    }
-
+    /** Client-facing standard page: the folders belonging to one standard. */
     public function show(Menu $menu): View
     {
         $menu->load(['documentFolders' => fn ($q) => $q->ordered()->withCount('documents')]);
@@ -31,21 +21,38 @@ class MenuController extends Controller
         return view('menus.show', compact('menu'));
     }
 
+    /* ---------------- admin CRUD ---------------- */
+
+    public function index(Request $request): View
+    {
+        $this->authorize('viewAny', Menu::class);
+
+        $menus = Menu::query()
+            ->when($request->string('search')->toString(),
+                fn ($q, $term) => $q->whereTranslationLike('name', $term))
+            ->ordered()
+            ->withCount('documentFolders')
+            ->paginate(24)
+            ->withQueryString();
+
+        return view('menus.index', compact('menus'));
+    }
+
     public function create(): View
     {
         $this->authorize('create', Menu::class);
 
-        return view('menus.create', ['menu' => new Menu()]);
+        return view('menus.create', ['menu' => new Menu]);
     }
 
     public function store(MenuRequest $request): RedirectResponse
     {
         $this->authorize('create', Menu::class);
 
-        $menu = Menu::create($request->validated());
+        Menu::create($request->validated());
 
         return redirect()
-            ->route('menus.show', $menu)
+            ->route('admin.menus.index')
             ->with('status', __('menus.created'));
     }
 
@@ -63,7 +70,7 @@ class MenuController extends Controller
         $menu->update($request->validated());
 
         return redirect()
-            ->route('menus.show', $menu)
+            ->route('admin.menus.index')
             ->with('status', __('menus.updated'));
     }
 
@@ -71,8 +78,32 @@ class MenuController extends Controller
     {
         $this->authorize('delete', $menu);
 
+        if ($menu->documentFolders()->exists()) {
+            return back()->withErrors(['menu' => __('menus.has_folders')]);
+        }
+
         $menu->delete();
 
-        return redirect()->route('dashboard')->with('status', __('menus.deleted'));
+        return redirect()
+            ->route('admin.menus.index')
+            ->with('status', __('menus.deleted'));
+    }
+
+    public function reorder(Request $request): RedirectResponse
+    {
+        $this->authorize('reorder', Menu::class);
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:menus,id'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['ids'] as $position => $id) {
+                Menu::whereKey($id)->update(['order' => $position]);
+            }
+        });
+
+        return back()->with('status', __('menus.reordered'));
     }
 }
