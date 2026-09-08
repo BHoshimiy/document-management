@@ -55,7 +55,7 @@ class CategoryController extends Controller implements HasMiddleware
     {
         return view('categories.create', [
             'category' => new Category,
-            'folders' => DocumentFolder::ordered()->get(),
+            'folders' => DocumentFolder::with(['menu'])->ordered()->get(),
         ]);
     }
 
