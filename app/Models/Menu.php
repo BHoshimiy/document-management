@@ -8,7 +8,6 @@ use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Menu extends Model
@@ -30,9 +29,9 @@ class Menu extends Model
         return $this->hasMany(DocumentFolder::class)->orderBy('order');
     }
 
-    public function categories(): HasManyThrough
+    public function categories(): HasMany
     {
-        return $this->hasManyThrough(Category::class, DocumentFolder::class);
+        return $this->hasMany(Category::class)->orderBy('order');
     }
 
     public function scopeOrdered($query)

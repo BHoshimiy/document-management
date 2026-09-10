@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
-use App\Models\DocumentFolder;
+use App\Models\Menu;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,7 +43,7 @@ class CategoryController extends Controller implements HasMiddleware
             ->when($request->string('search')->toString(),
                 fn ($q, $term) => $q->whereTranslationLike('name', $term))
             ->ordered()
-            ->with('documentFolder')
+            ->with('menu')
             ->withCount('documents')
             ->paginate(24)
             ->withQueryString();
@@ -55,7 +55,7 @@ class CategoryController extends Controller implements HasMiddleware
     {
         return view('categories.create', [
             'category' => new Category,
-            'folders' => DocumentFolder::with(['menu'])->ordered()->get(),
+            'menus' => Menu::ordered()->get(),
         ]);
     }
 
@@ -77,7 +77,7 @@ class CategoryController extends Controller implements HasMiddleware
     {
         return view('categories.edit', [
             'category' => $category,
-            'folders' => DocumentFolder::ordered()->get(),
+            'menus' => Menu::ordered()->get(),
         ]);
     }
 

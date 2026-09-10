@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Category;
 use App\Models\Document;
+use App\Models\Menu;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -80,4 +81,47 @@ it('renders the categories index as a table', function () {
         ->assertSee('uploads-table')
         ->assertDontSee('doc-card')
         ->assertSee('Staff files');
+});
+
+it('scopes a category to a standard when one is chosen', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.categories.store'), [
+            'name' => ['en' => 'GAP checklists', 'ru' => 'Чек-листы ГАП'],
+            'menu_id' => $menu->id,
+        ])
+        ->assertRedirect(route('admin.categories.index'));
+
+    expect(Category::firstWhere('slug', 'gap-checklists')->menu_id)->toBe($menu->id);
+});
+
+it('leaves a category global when no standard is chosen', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.categories.store'), [
+            'name' => ['en' => 'Staff files', 'ru' => 'Личные дела'],
+        ])
+        ->assertRedirect(route('admin.categories.index'));
+
+    expect(Category::firstWhere('slug', 'staff-files')->menu_id)->toBeNull();
+});
+
+it('rejects an unknown standard', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.categories.store'), [
+            'name' => ['en' => 'Orphan', 'ru' => 'Сирота'],
+            'menu_id' => 999,
+        ])
+        ->assertSessionHasErrors('menu_id');
+});
+
+it('shows the standard of a category on the index', function () {
+    Category::factory()
+        ->for(Menu::factory()->create(['name' => ['en' => 'GLOBAL GAP', 'ru' => 'ГЛОБАЛ ГАП']]))
+        ->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.categories.index'))
+        ->assertOk()
+        ->assertSee('GLOBAL GAP');
 });

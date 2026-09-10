@@ -15,7 +15,7 @@ class DocumentFolder extends Model
 {
     use HasFactory, HasTranslations, SoftDeletes;
 
-    protected $fillable = ['menu_id', 'name', 'code', 'slug', 'order'];
+    protected $fillable = ['menu_id', 'category_id', 'name', 'code', 'slug', 'order'];
 
     /** @var array<int, string> */
     protected array $translatable = ['name'];
@@ -30,9 +30,9 @@ class DocumentFolder extends Model
         return $this->belongsTo(Menu::class);
     }
 
-    public function categories(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Category::class)->orderBy('order');
+        return $this->belongsTo(Category::class);
     }
 
     public function documents(): HasMany

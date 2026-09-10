@@ -7,6 +7,7 @@ namespace App\Http\Requests;
 use App\Models\DocumentFolder;
 use App\Support\Slug;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class DocumentFolderRequest extends FormRequest
 {
@@ -19,6 +20,14 @@ class DocumentFolderRequest extends FormRequest
     {
         return [
             'menu_id' => ['required', 'integer', 'exists:menus,id'],
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where(function ($query) {
+                    $query->whereNull('deleted_at')
+                        ->where(fn ($q) => $q->whereNull('menu_id')->orWhere('menu_id', $this->integer('menu_id')));
+                }),
+            ],
             'name' => ['required', 'array'],
             'name.en' => ['required', 'string', 'max:255'],
             'name.ru' => ['required', 'string', 'max:255'],
@@ -26,6 +35,12 @@ class DocumentFolderRequest extends FormRequest
             'slug' => ['required', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
         ];
+    }
+
+    /** The folder's category is optional; when set it must be global or belong to the chosen menu. */
+    public function messages(): array
+    {
+        return ['category_id.exists' => __('folders.category_menu_mismatch')];
     }
 
     /**

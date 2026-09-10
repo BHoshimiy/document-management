@@ -24,7 +24,7 @@ class CategoryRequest extends FormRequest
             'slug' => ['required', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'is_default' => ['boolean'],
-            'document_folder_id' => ['nullable', 'integer', 'exists:document_folders,id'],
+            'menu_id' => ['nullable', 'integer', 'exists:menus,id'],
         ];
     }
 

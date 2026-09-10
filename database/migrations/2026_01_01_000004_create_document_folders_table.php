@@ -13,6 +13,10 @@ return new class extends Migration
         Schema::create('document_folders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('menu_id')->constrained('menus')->cascadeOnDelete();
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained('categories')
+                ->nullOnDelete();
             $table->json('name');
             $table->string('code')->index();  // e.g. RP-FER-01
             $table->string('slug');

@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->unsignedInteger('order')->default(0)->index();
             $table->boolean('is_default')->default(false)->index();
-            $table->foreignId('document_folder_id')
+            $table->foreignId('menu_id')
                 ->nullable()
-                ->constrained('document_folders')
+                ->constrained('menus')
                 ->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();

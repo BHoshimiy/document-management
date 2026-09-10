@@ -16,6 +16,7 @@ class DocumentFolderFactory extends Factory
 
         return [
             'menu_id' => Menu::factory(),
+            'category_id' => null,
             'name' => ['en' => $en, 'ru' => $en],
             'code' => strtoupper(fake()->bothify('??-###')),
             'slug' => Str::slug($en),

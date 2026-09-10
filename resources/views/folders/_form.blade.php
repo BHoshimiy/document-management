@@ -23,6 +23,36 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label" for="category_id">{{ __('app.category') }}</label>
+            <select id="category_id" name="category_id"
+                    class="form-select @error('category_id') is-invalid @enderror">
+                <option value="">{{ __('app.no_category') }}</option>
+                @if ($globalCategories->isNotEmpty())
+                    <optgroup label="{{ __('app.global_category') }}">
+                        @foreach ($globalCategories as $category)
+                            <option value="{{ $category->id }}"
+                                @selected(old('category_id', $folder->category_id) == $category->id)>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </optgroup>
+                @endif
+                @foreach ($menus as $menu)
+                    @continue($menu->categories->isEmpty())
+                    <optgroup label="{{ $menu->name }}">
+                        @foreach ($menu->categories as $category)
+                            <option value="{{ $category->id }}"
+                                @selected(old('category_id', $folder->category_id) == $category->id)>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            </select>
+            @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
             <label class="form-label" for="name_en">{{ __('app.name_en') }}</label>
             <input type="text" id="name_en" name="name[en]"
                    value="{{ old('name.en', $translations['en'] ?? '') }}"

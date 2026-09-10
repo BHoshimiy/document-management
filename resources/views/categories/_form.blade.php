@@ -26,18 +26,18 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label" for="document_folder_id">{{ __('app.document_folder') }}</label>
-            <select id="document_folder_id" name="document_folder_id"
-                    class="form-select @error('document_folder_id') is-invalid @enderror">
+            <label class="form-label" for="menu_id">{{ __('app.standard') }}</label>
+            <select id="menu_id" name="menu_id"
+                    class="form-select @error('menu_id') is-invalid @enderror">
                 <option value="">{{ __('app.global_category') }}</option>
-                @foreach ($folders as $folder)
-                    <option value="{{ $folder->id }}"
-                        @selected(old('document_folder_id', $category->document_folder_id) == $folder->id)>
-                        {{ $folder->menu?->name }} — {{ $folder->name }}
+                @foreach ($menus as $menu)
+                    <option value="{{ $menu->id }}"
+                        @selected(old('menu_id', $category->menu_id) == $menu->id)>
+                        {{ $menu->name }}
                     </option>
                 @endforeach
             </select>
-            @error('document_folder_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            @error('menu_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
         <div class="mb-3">

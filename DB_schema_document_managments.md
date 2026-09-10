@@ -20,11 +20,12 @@ Tables:
 		slug(en)
 		order
 		is_default
-		document_folder_id:nullable -> fk -> document_folders
+		menu_id:nullable -> fk -> menus
 
 	- document_folders table
 		id
 		menu_id 					-> fk -> munes
+		category_id:nullable 		-> fk -> categories
 		name(ru,en)
 		code
 		slug(en)

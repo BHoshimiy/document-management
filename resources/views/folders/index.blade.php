@@ -27,6 +27,7 @@
                     <th>{{ __('app.code') }}</th>
                     <th>{{ __('app.name') }}</th>
                     <th>{{ __('app.standard') }}</th>
+                    <th>{{ __('app.category') }}</th>
                     <th>{{ __('app.documents') }}</th>
                     <th>{{ __('app.order') }}</th>
                     <th></th>
@@ -39,6 +40,7 @@
                         <td><span class="type-chip">{{ $folder->code }}</span></td>
                         <td>{{ $folder->name }}</td>
                         <td>{{ $folder->menu?->name }}</td>
+                        <td>{{ $folder->category?->name ?? '—' }}</td>
                         <td>{{ trans_choice('app.document_count', $folder->documents_count) }}</td>
                         <td>{{ $folder->order }}</td>
                         <td>

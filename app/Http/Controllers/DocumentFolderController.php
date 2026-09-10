@@ -18,7 +18,7 @@ class DocumentFolderController extends Controller
     /** Client-facing folder page: the uploaded-documents table. */
     public function show(Request $request, DocumentFolder $folder): View
     {
-        $folder->load('menu', 'categories');
+        $folder->load('menu');
 
         $documents = Document::query()
             ->visibleTo($request->user())
@@ -28,7 +28,7 @@ class DocumentFolderController extends Controller
             ->paginate(25);
 
         $categories = Category::query()
-            ->where(fn ($q) => $q->whereNull('document_folder_id')->orWhere('document_folder_id', $folder->id))
+            ->forMenu($folder->menu_id)
             ->ordered()
             ->get();
 
@@ -42,7 +42,7 @@ class DocumentFolderController extends Controller
         $this->authorize('viewAny', DocumentFolder::class);
 
         $folders = DocumentFolder::query()
-            ->with('menu')
+            ->with('menu', 'category')
             ->withCount('documents')
             ->ordered()
             ->paginate(24);
@@ -55,8 +55,9 @@ class DocumentFolderController extends Controller
         $this->authorize('create', DocumentFolder::class);
 
         return view('folders.create', [
-            'folder' => new DocumentFolder(),
-            'menus' => Menu::ordered()->get(),
+            'folder' => new DocumentFolder,
+            'menus' => Menu::query()->with('categories')->ordered()->get(),
+            'globalCategories' => Category::query()->whereNull('menu_id')->ordered()->get(),
         ]);
     }
 
@@ -77,7 +78,8 @@ class DocumentFolderController extends Controller
 
         return view('folders.edit', [
             'folder' => $folder,
-            'menus' => Menu::ordered()->get(),
+            'menus' => Menu::query()->with('categories')->ordered()->get(),
+            'globalCategories' => Category::query()->whereNull('menu_id')->ordered()->get(),
         ]);
     }
 

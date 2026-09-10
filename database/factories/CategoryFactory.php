@@ -18,7 +18,7 @@ class CategoryFactory extends Factory
             'slug' => Str::slug($en),
             'order' => fake()->numberBetween(0, 50),
             'is_default' => false,
-            'document_folder_id' => null,
+            'menu_id' => null,
         ];
     }
 

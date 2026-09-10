@@ -30,7 +30,7 @@
                 <tr>
                     <th>#</th>
                     <th>{{ __('app.name') }}</th>
-                    <th>{{ __('app.document_folder') }}</th>
+                    <th>{{ __('app.standard') }}</th>
                     <th>{{ __('app.documents') }}</th>
                     <th>{{ __('app.order') }}</th>
                     <th></th>
@@ -46,7 +46,7 @@
                                 <span class="badge-soft badge-ready">{{ __('app.default') }}</span>
                             @endif
                         </td>
-                        <td>{{ $category->documentFolder?->name ?? __('app.global_category') }}</td>
+                        <td>{{ $category->menu?->name ?? __('app.global_category') }}</td>
                         <td>{{ trans_choice('app.document_count', $category->documents_count) }}</td>
                         <td>{{ $category->order }}</td>
                         <td>

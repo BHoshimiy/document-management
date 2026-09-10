@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Category;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Menu;
@@ -119,4 +120,112 @@ it('renders the folders index as a table', function () {
         ->assertDontSee('doc-card')
         ->assertSee('RP-FER-01')
         ->assertSee('Fertilizer Record');
+});
+
+it('offers a folder the global categories plus the ones of its own standard', function () {
+    $folder = DocumentFolder::factory()->create();
+
+    $global = Category::factory()->create();
+    $ownStandard = Category::factory()->create(['menu_id' => $folder->menu_id]);
+    $otherStandard = Category::factory()->for(Menu::factory())->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('folders.show', $folder))
+        ->assertOk()
+        ->assertViewHas('categories', function ($categories) use ($global, $ownStandard, $otherStandard) {
+            $ids = $categories->pluck('id');
+
+            return $ids->contains($global->id)
+                && $ids->contains($ownStandard->id)
+                && ! $ids->contains($otherStandard->id);
+        });
+});
+
+it('stores a global category on a folder', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.folders.store'), [
+            'menu_id' => $menu->id,
+            'category_id' => $category->id,
+            'name' => ['en' => 'Records', 'ru' => 'Записи'],
+            'code' => 'RP-FER-01',
+        ])
+        ->assertRedirect(route('admin.folders.index'));
+
+    expect(DocumentFolder::sole()->category_id)->toBe($category->id);
+});
+
+it('stores a category of the same menu on a folder', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->create(['menu_id' => $menu->id]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.folders.store'), [
+            'menu_id' => $menu->id,
+            'category_id' => $category->id,
+            'name' => ['en' => 'Records', 'ru' => 'Записи'],
+            'code' => 'RP-FER-01',
+        ])
+        ->assertRedirect(route('admin.folders.index'));
+
+    expect(DocumentFolder::sole()->category_id)->toBe($category->id);
+});
+
+it('refuses a category that belongs to another menu', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->for(Menu::factory())->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.folders.store'), [
+            'menu_id' => $menu->id,
+            'category_id' => $category->id,
+            'name' => ['en' => 'Records', 'ru' => 'Записи'],
+            'code' => 'RP-FER-01',
+        ])
+        ->assertSessionHasErrors('category_id');
+
+    expect(DocumentFolder::count())->toBe(0);
+});
+
+it('leaves the folder category empty when none is chosen', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.folders.store'), [
+            'menu_id' => Menu::factory()->create()->id,
+            'name' => ['en' => 'Records', 'ru' => 'Записи'],
+            'code' => 'RP-FER-01',
+        ])
+        ->assertRedirect(route('admin.folders.index'));
+
+    expect(DocumentFolder::sole()->category_id)->toBeNull();
+});
+
+it('shows the folder category on the index', function () {
+    DocumentFolder::factory()->create([
+        'category_id' => Category::factory()->create([
+            'name' => ['en' => 'Staff files', 'ru' => 'Личные дела'],
+        ])->id,
+    ]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.folders.index'))
+        ->assertOk()
+        ->assertSee('Staff files');
+});
+
+it('groups the category options by menu on the create form', function () {
+    $menu = Menu::factory()->create(['name' => ['en' => 'GLOBAL GAP', 'ru' => 'ГЛОБАЛ ГАП']]);
+    Category::factory()->create(['name' => ['en' => 'Records', 'ru' => 'Записи']]);
+    Category::factory()->create([
+        'menu_id' => $menu->id,
+        'name' => ['en' => 'GAP Checklists', 'ru' => 'Чек-листы ГАП'],
+    ]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.folders.create'))
+        ->assertOk()
+        ->assertSee('<optgroup label="GLOBAL GAP">', false)
+        ->assertSee('Records')
+        ->assertSee('GAP Checklists');
 });
