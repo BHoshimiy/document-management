@@ -53,7 +53,7 @@
                         @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-12 {{ $canManage ? 'col-md-2' : 'col-md-3' }}">
-                        <button type="submit" class="btn-open w-100">{{ __('app.upload') }}</button>
+                        <button style="margin-bottom: 5px" type="submit" class="btn-open w-100">{{ __('app.upload') }}</button>
                     </div>
                 </div>
             </form>
@@ -84,7 +84,6 @@
                         <td class="row-num">{{ $loop->iteration + ($documents->currentPage() - 1) * $documents->perPage() }}</td>
                         <td>
                             <div class="file-name">
-                                <span class="file-icon">{{ $document->extension }}</span>
                                 {{ $document->name }}
                             </div>
                         </td>
