@@ -10,7 +10,6 @@ use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Services\DocumentService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
@@ -28,9 +27,8 @@ class DocumentController extends Controller
         abort_if($company === null, 403, __('documents.no_company'));
         $this->authorize('update', $company);
 
-        $this->documents->store($company, $request->file('file'), [
+        $this->documents->store($company, $folder, $request->file('file'), [
             'category_id' => $request->integer('category_id'),
-            'document_folder_id' => $folder->id,
             'name' => $request->string('name')->toString() ?: null,
         ]);
 
@@ -41,9 +39,9 @@ class DocumentController extends Controller
     {
         $this->authorize('view', $document);
 
-        abort_unless(Storage::disk('public')->exists($document->path), 404);
+        abort_unless($this->documents->exists($document), 404);
 
-        return Storage::disk('public')->download($document->path, $document->name);
+        return $this->documents->stream($document);
     }
 
     public function destroy(Document $document): RedirectResponse

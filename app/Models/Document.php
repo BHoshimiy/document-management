@@ -21,6 +21,7 @@ class Document extends Model
         'document_folder_id',
         'name',
         'path',
+        'drive_file_id',
         'mime_type',
         'size',
     ];
@@ -47,6 +48,11 @@ class Document extends Model
 
     public function getUrlAttribute(): ?string
     {
+        // Drive-backed files are proxied through the app so DocumentPolicy still applies.
+        if ($this->drive_file_id !== null) {
+            return route('documents.download', $this);
+        }
+
         return $this->path ? Storage::disk('public')->url($this->path) : null;
     }
 

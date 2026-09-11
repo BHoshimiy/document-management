@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\DocumentStorage;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\CompanyCertificate;
@@ -15,6 +16,8 @@ use App\Policies\CategoryPolicy;
 use App\Policies\CompanyCertificatePolicy;
 use App\Policies\CompanyPolicy;
 use App\Policies\DocumentPolicy;
+use App\Services\Storage\GoogleDriveStorage;
+use App\Services\Storage\LocalDocumentStorage;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -26,6 +29,15 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        // DOCUMENT_STORAGE picks where new uploads go; see config/documents.php.
+        $this->app->bind(DocumentStorage::class, fn () => match (config('documents.driver')) {
+            'google_drive' => $this->app->make(GoogleDriveStorage::class),
+            default => $this->app->make(LocalDocumentStorage::class),
+        });
+    }
+
     public function boot(): void
     {
         Model::shouldBeStrict(! app()->isProduction());
