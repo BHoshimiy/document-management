@@ -64,10 +64,12 @@ return [
     'save_standard' => 'Save menu',
     'save_changes' => 'Save changes',
     'select_category' => 'Select a category',
+    'select_company' => 'Select a company',
     'no_category' => '— No category —',
     'select_standard' => 'Select a menu',
     'choose_file' => 'Choose file',
 
+    'company' => 'Company',
     'company_name' => 'Company name',
     'inn' => 'INN',
     'address' => 'Address',

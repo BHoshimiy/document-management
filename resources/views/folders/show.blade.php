@@ -8,18 +8,38 @@
         :back="route('menus.show', $folder->menu)"
         :backLabel="__('app.back_to', ['name' => $folder->menu->name])" />
 
-    @if (auth()->user()->company)
+    @php
+        $ownCompany = auth()->user()->company;
+        $canManage = auth()->user()->canManageCatalog();
+    @endphp
+
+    @if ($ownCompany || ($canManage && $companies->isNotEmpty()))
         <div class="upload-card">
             <form method="POST" action="{{ route('documents.store', $folder) }}" enctype="multipart/form-data">
                 @csrf
                 <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-5">
+                    <div class="col-12 {{ $canManage ? 'col-md-4' : 'col-md-5' }}">
                         <label class="form-label" for="file">{{ __('app.choose_file') }}</label>
                         <input type="file" id="file" name="file"
                                class="form-control @error('file') is-invalid @enderror" required>
                         @error('file') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-12 col-md-4">
+                    @if ($canManage)
+                        <div class="col-12 col-md-3">
+                            <label class="form-label" for="company_id">{{ __('app.company') }}</label>
+                            <select id="company_id" name="company_id"
+                                    class="form-select @error('company_id') is-invalid @enderror" required>
+                                <option value="">{{ __('app.select_company') }}</option>
+                                @foreach ($companies as $option)
+                                    <option value="{{ $option->id }}" @selected(old('company_id') == $option->id)>
+                                        {{ $option->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('company_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    @endif
+                    <div class="col-12 {{ $canManage ? 'col-md-3' : 'col-md-4' }}">
                         <label class="form-label" for="category_id">{{ __('app.category') }}</label>
                         <select id="category_id" name="category_id"
                                 class="form-select @error('category_id') is-invalid @enderror" required>
@@ -32,7 +52,7 @@
                         </select>
                         @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 {{ $canManage ? 'col-md-2' : 'col-md-3' }}">
                         <button type="submit" class="btn-open w-100">{{ __('app.upload') }}</button>
                     </div>
                 </div>

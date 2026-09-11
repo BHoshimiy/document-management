@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DocumentFolderRequest;
 use App\Models\Category;
+use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Models\Menu;
@@ -32,7 +33,13 @@ class DocumentFolderController extends Controller
             ->ordered()
             ->get();
 
-        return view('folders.show', compact('folder', 'documents', 'categories'));
+        // Catalog managers upload on a company's behalf and need to pick one;
+        // a client always uploads to their own.
+        $companies = $request->user()->canManageCatalog()
+            ? Company::query()->orderBy('name')->get()
+            : collect();
+
+        return view('folders.show', compact('folder', 'documents', 'categories', 'companies'));
     }
 
     /** Create a folder from inside the menu page, returning there afterwards. */

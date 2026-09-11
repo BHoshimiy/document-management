@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDocumentRequest;
+use App\Models\Company;
 use App\Models\Document;
 use App\Models\DocumentFolder;
 use App\Services\DocumentService;
@@ -18,7 +19,11 @@ class DocumentController extends Controller
 
     public function store(StoreDocumentRequest $request, DocumentFolder $folder): RedirectResponse
     {
-        $company = $request->user()->company;
+        // Role decides the branch, never the payload: a client's posted
+        // company_id is never read, so it cannot target someone else's company.
+        $company = $request->user()->canManageCatalog()
+            ? Company::findOrFail($request->integer('company_id'))
+            : $request->user()->company;
 
         abort_if($company === null, 403, __('documents.no_company'));
         $this->authorize('update', $company);

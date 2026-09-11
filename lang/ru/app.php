@@ -64,10 +64,12 @@ return [
     'save_standard' => 'Сохранить меню',
     'save_changes' => 'Сохранить изменения',
     'select_category' => 'Выберите категорию',
+    'select_company' => 'Выберите компанию',
     'no_category' => '— Без категории —',
     'select_standard' => 'Выберите меню',
     'choose_file' => 'Выберите файл',
 
+    'company' => 'Компания',
     'company_name' => 'Название компании',
     'inn' => 'ИНН',
     'address' => 'Адрес',
