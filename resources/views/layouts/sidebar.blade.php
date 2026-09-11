@@ -58,13 +58,4 @@
             </details>
         </div>
     @endcan
-
-    <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="logout-link">
-                {{ __('app.sign_out') }}
-            </button>
-        </form>
-    </div>
 </aside>

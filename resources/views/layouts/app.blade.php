@@ -14,10 +14,14 @@
 <div class="app">
     @include('layouts.sidebar')
 
-    <main class="main">
-        <x-alert />
-        @yield('content')
-    </main>
+    <div class="main">
+        @include('layouts.topbar')
+
+        <main class="content">
+            <x-alert />
+            @yield('content')
+        </main>
+    </div>
 </div>
 
 </body>
