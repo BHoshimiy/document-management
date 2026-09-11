@@ -25,7 +25,9 @@ class DocumentFolderRequest extends FormRequest
                 'integer',
                 Rule::exists('categories', 'id')->where(function ($query) {
                     $query->whereNull('deleted_at')
-                        ->where(fn ($q) => $q->whereNull('menu_id')->orWhere('menu_id', $this->integer('menu_id')));
+                        ->where(fn ($q) => $q
+                            ->where(fn ($global) => $global->whereNull('menu_id')->where('is_default', true))
+                            ->orWhere('menu_id', $this->integer('menu_id')));
                 }),
             ],
             'name' => ['required', 'array'],
@@ -37,7 +39,7 @@ class DocumentFolderRequest extends FormRequest
         ];
     }
 
-    /** The folder's category is optional; when set it must be global or belong to the chosen menu. */
+    /** The folder's category is optional; when set it must be a global default or belong to the chosen menu. */
     public function messages(): array
     {
         return ['category_id.exists' => __('folders.category_menu_mismatch')];

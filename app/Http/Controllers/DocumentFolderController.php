@@ -57,7 +57,7 @@ class DocumentFolderController extends Controller
         return view('folders.create', [
             'folder' => new DocumentFolder,
             'menus' => Menu::query()->with('categories')->ordered()->get(),
-            'globalCategories' => Category::query()->whereNull('menu_id')->ordered()->get(),
+            'globalCategories' => Category::query()->whereNull('menu_id')->defaults()->ordered()->get(),
         ]);
     }
 
@@ -79,7 +79,7 @@ class DocumentFolderController extends Controller
         return view('folders.edit', [
             'folder' => $folder,
             'menus' => Menu::query()->with('categories')->ordered()->get(),
-            'globalCategories' => Category::query()->whereNull('menu_id')->ordered()->get(),
+            'globalCategories' => Category::query()->whereNull('menu_id')->defaults()->ordered()->get(),
         ]);
     }
 

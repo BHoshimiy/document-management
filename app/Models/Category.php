@@ -50,13 +50,20 @@ class Category extends Model
     }
 
     /**
-     * Categories offered inside a standard: the standard's own plus the global ones.
+     * Categories offered inside a standard: the standard's own plus the global defaults.
+     *
+     * A global category only counts when it is a default; a default scoped to another
+     * menu does not, or it would leak into every menu.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeForMenu(Builder $query, ?int $menuId): Builder
     {
-        return $query->where(fn ($q) => $q->whereNull('menu_id')->orWhere('menu_id', $menuId));
+        return $query->where(
+            fn ($q) => $q
+                ->where(fn ($global) => $global->whereNull('menu_id')->where('is_default', true))
+                ->orWhere('menu_id', $menuId)
+        );
     }
 }

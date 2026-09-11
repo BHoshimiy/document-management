@@ -122,28 +122,32 @@ it('renders the folders index as a table', function () {
         ->assertSee('Fertilizer Record');
 });
 
-it('offers a folder the global categories plus the ones of its own standard', function () {
+it('offers a folder the global default categories plus the ones of its own standard', function () {
     $folder = DocumentFolder::factory()->create();
 
-    $global = Category::factory()->create();
+    $globalDefault = Category::factory()->default()->create();
+    $globalNonDefault = Category::factory()->create();
     $ownStandard = Category::factory()->create(['menu_id' => $folder->menu_id]);
     $otherStandard = Category::factory()->for(Menu::factory())->create();
+    $otherStandardDefault = Category::factory()->default()->for(Menu::factory())->create();
 
     $this->actingAs(User::factory()->admin()->create())
         ->get(route('folders.show', $folder))
         ->assertOk()
-        ->assertViewHas('categories', function ($categories) use ($global, $ownStandard, $otherStandard) {
+        ->assertViewHas('categories', function ($categories) use ($globalDefault, $globalNonDefault, $ownStandard, $otherStandard, $otherStandardDefault) {
             $ids = $categories->pluck('id');
 
-            return $ids->contains($global->id)
+            return $ids->contains($globalDefault->id)
                 && $ids->contains($ownStandard->id)
-                && ! $ids->contains($otherStandard->id);
+                && ! $ids->contains($globalNonDefault->id)
+                && ! $ids->contains($otherStandard->id)
+                && ! $ids->contains($otherStandardDefault->id);
         });
 });
 
-it('stores a global category on a folder', function () {
+it('stores a global default category on a folder', function () {
     $menu = Menu::factory()->create();
-    $category = Category::factory()->create();
+    $category = Category::factory()->default()->create();
 
     $this->actingAs(User::factory()->admin()->create())
         ->post(route('admin.folders.store'), [
@@ -171,6 +175,22 @@ it('stores a category of the same menu on a folder', function () {
         ->assertRedirect(route('admin.folders.index'));
 
     expect(DocumentFolder::sole()->category_id)->toBe($category->id);
+});
+
+it('refuses a global category that is not a default', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.folders.store'), [
+            'menu_id' => $menu->id,
+            'category_id' => $category->id,
+            'name' => ['en' => 'Records', 'ru' => 'Записи'],
+            'code' => 'RP-FER-01',
+        ])
+        ->assertSessionHasErrors('category_id');
+
+    expect(DocumentFolder::count())->toBe(0);
 });
 
 it('refuses a category that belongs to another menu', function () {
@@ -216,7 +236,7 @@ it('shows the folder category on the index', function () {
 
 it('groups the category options by menu on the create form', function () {
     $menu = Menu::factory()->create(['name' => ['en' => 'GLOBAL GAP', 'ru' => 'ГЛОБАЛ ГАП']]);
-    Category::factory()->create(['name' => ['en' => 'Records', 'ru' => 'Записи']]);
+    Category::factory()->default()->create(['name' => ['en' => 'Records', 'ru' => 'Записи']]);
     Category::factory()->create([
         'menu_id' => $menu->id,
         'name' => ['en' => 'GAP Checklists', 'ru' => 'Чек-листы ГАП'],
