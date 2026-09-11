@@ -20,6 +20,7 @@ return [
     'owner' => 'Владелец',
     'sign_out' => 'Выйти',
 
+    'all' => 'Все',
     'open' => 'Открыть',
     'view' => 'Просмотр',
     'edit' => 'Изменить',
@@ -80,6 +81,7 @@ return [
     'search_categories' => 'Поиск категорий',
     'search_standards' => 'Поиск меню',
     'search_companies' => 'Поиск компаний',
+    'search_folders' => 'Поиск папок',
     'confirm_delete' => 'Вы уверены? Это действие необратимо.',
 
     'no_folders' => 'Папок документов пока нет',

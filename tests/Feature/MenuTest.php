@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Category;
 use App\Models\DocumentFolder;
 use App\Models\Menu;
 use App\Models\User;
@@ -184,4 +185,102 @@ it('renders the standards index as a table', function () {
         ->assertDontSee('doc-card')
         ->assertSee('Global GAP')
         ->assertSee('1 folder');
+});
+
+it('offers the global default categories plus the menus own as tab pills', function () {
+    $menu = Menu::factory()->create();
+
+    $globalDefault = Category::factory()->default()->create();
+    $ownDefault = Category::factory()->default()->create(['menu_id' => $menu->id]);
+    $globalNonDefault = Category::factory()->create();
+    $otherMenuDefault = Category::factory()->default()->for(Menu::factory())->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertViewHas('categories', function ($categories) use ($globalDefault, $ownDefault, $globalNonDefault, $otherMenuDefault) {
+            $ids = $categories->pluck('id');
+
+            return $ids->contains($globalDefault->id)
+                && $ids->contains($ownDefault->id)
+                && ! $ids->contains($globalNonDefault->id)
+                && ! $ids->contains($otherMenuDefault->id);
+        });
+});
+
+it('filters the folders of a menu by category', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->default()->create(['menu_id' => $menu->id]);
+
+    $matching = DocumentFolder::factory()->create([
+        'menu_id' => $menu->id,
+        'category_id' => $category->id,
+    ]);
+    DocumentFolder::factory()->create(['menu_id' => $menu->id]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.show', ['menu' => $menu, 'category' => $category->slug]))
+        ->assertOk()
+        ->assertViewHas('folders', fn ($folders) => $folders->count() === 1
+            && $folders->first()->id === $matching->id);
+});
+
+it('filters the folders of a menu by name', function () {
+    $menu = Menu::factory()->create();
+
+    DocumentFolder::factory()->create([
+        'menu_id' => $menu->id,
+        'name' => ['en' => 'Pesticide log', 'ru' => 'Журнал пестицидов'],
+        'slug' => 'pesticide-log',
+    ]);
+    DocumentFolder::factory()->create([
+        'menu_id' => $menu->id,
+        'name' => ['en' => 'Water analysis', 'ru' => 'Анализ воды'],
+        'slug' => 'water-analysis',
+    ]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.show', ['menu' => $menu, 'search' => 'Pesticide']))
+        ->assertOk()
+        ->assertViewHas('folders', fn ($folders) => $folders->count() === 1
+            && $folders->first()->slug === 'pesticide-log');
+});
+
+it('combines the category and name filters and ignores an unknown category', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->default()->create(['menu_id' => $menu->id]);
+
+    $matching = DocumentFolder::factory()->create([
+        'menu_id' => $menu->id,
+        'category_id' => $category->id,
+        'name' => ['en' => 'Harvest record', 'ru' => 'Запись урожая'],
+        'slug' => 'harvest-record',
+    ]);
+    // Right category, wrong name.
+    DocumentFolder::factory()->create([
+        'menu_id' => $menu->id,
+        'category_id' => $category->id,
+        'name' => ['en' => 'Storage record', 'ru' => 'Запись хранения'],
+        'slug' => 'storage-record',
+    ]);
+    // Right name, no category.
+    DocumentFolder::factory()->create([
+        'menu_id' => $menu->id,
+        'name' => ['en' => 'Harvest plan', 'ru' => 'План урожая'],
+        'slug' => 'harvest-plan',
+    ]);
+
+    $user = User::factory()->admin()->create();
+
+    $this->actingAs($user)
+        ->get(route('menus.show', ['menu' => $menu, 'category' => $category->slug, 'search' => 'Harvest']))
+        ->assertOk()
+        ->assertViewHas('folders', fn ($folders) => $folders->count() === 1
+            && $folders->first()->id === $matching->id);
+
+    $this->actingAs($user)
+        ->get(route('menus.show', ['menu' => $menu, 'category' => 'does-not-exist']))
+        ->assertOk()
+        ->assertViewHas('activeCategory', fn ($activeCategory) => $activeCategory === null)
+        ->assertViewHas('folders', fn ($folders) => $folders->count() === 3);
 });

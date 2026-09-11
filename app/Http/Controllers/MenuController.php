@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MenuRequest;
+use App\Models\Category;
+use App\Models\DocumentFolder;
 use App\Models\Menu;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,11 +16,28 @@ use Illuminate\View\View;
 class MenuController extends Controller
 {
     /** Client-facing standard page: the folders belonging to one standard. */
-    public function show(Menu $menu): View
+    public function show(Request $request, Menu $menu): View
     {
-        $menu->load(['documentFolders' => fn ($q) => $q->ordered()->withCount('documents')]);
+        // Tab pills: the global default categories plus this menu's own defaults.
+        $categories = Category::query()
+            ->forMenu($menu->id)
+            ->ordered()
+            ->get();
 
-        return view('menus.show', compact('menu'));
+        // An unknown slug resolves to null, which reads as "All".
+        $activeCategory = $categories->firstWhere('slug', $request->string('category')->toString());
+        $categoryId = $activeCategory?->id;
+        $search = $request->string('search')->toString();
+
+        $folders = DocumentFolder::query()
+            ->where('menu_id', $menu->id)
+            ->when($categoryId, fn ($q, $categoryId) => $q->where('category_id', $categoryId))
+            ->when($search, fn ($q, $search) => $q->whereTranslationLike('name', $search))
+            ->ordered()
+            ->withCount('documents')
+            ->get();
+
+        return view('menus.show', compact('menu', 'folders', 'categories', 'activeCategory', 'search'));
     }
 
     /* ---------------- admin CRUD ---------------- */

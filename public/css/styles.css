@@ -120,7 +120,7 @@
   .main{
     flex:1;
     padding:38px 44px;
-    max-width:1180px;
+    /*max-width:1180px;*/
   }
   .page-title{
     font-family:'Fraunces',serif;
@@ -626,6 +626,7 @@
   }
 
   .search-box form, form.search-box{ position:relative; width:270px; }
+  a.tab-pill{ text-decoration:none; display:inline-block; }
   .search-box input{ width:100%; }
 
   .btn-pin-danger{ color:var(--rust); border-color:var(--line); background:var(--paper); cursor:pointer; }

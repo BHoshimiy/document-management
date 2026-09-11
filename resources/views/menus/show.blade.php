@@ -4,12 +4,27 @@
 @section('content')
     <x-page-header
         :title="$menu->name"
-        :subtitle="trans_choice('app.folder_count', $menu->documentFolders->count())"
+        :subtitle="trans_choice('app.folder_count', $folders->count())"
         :back="route('dashboard')"
         :backLabel="__('app.back_to_library')" />
 
+    <div class="toolbar">
+        <div>
+            <a href="{{ route('menus.show', ['menu' => $menu, 'search' => $search ?: null]) }}"
+               class="tab-pill @unless ($activeCategory) active @endunless">{{ __('app.all') }}</a>
+            @foreach ($categories as $category)
+                <a href="{{ route('menus.show', ['menu' => $menu, 'category' => $category->slug, 'search' => $search ?: null]) }}"
+                   class="tab-pill @if ($activeCategory?->is($category)) active @endif">{{ $category->name }}</a>
+            @endforeach
+        </div>
+        <x-search-box
+            :action="route('menus.show', $menu)"
+            :placeholder="__('app.search_folders')"
+            :hidden="['category' => $activeCategory?->slug]" />
+    </div>
+
     <div class="row g-3">
-        @forelse ($menu->documentFolders as $folder)
+        @forelse ($folders as $folder)
             <div class="col-12 col-sm-6 col-lg-4">
                 <x-doc-card
                     :code="$folder->code"

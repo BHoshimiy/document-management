@@ -20,6 +20,7 @@ return [
     'owner' => 'Owner',
     'sign_out' => 'Sign out',
 
+    'all' => 'All',
     'open' => 'Open',
     'view' => 'View',
     'edit' => 'Edit',
@@ -80,6 +81,7 @@ return [
     'search_categories' => 'Search categories',
     'search_standards' => 'Search menus',
     'search_companies' => 'Search companies',
+    'search_folders' => 'Search folders',
     'confirm_delete' => 'Are you sure? This cannot be undone.',
 
     'no_folders' => 'No document folders yet',
