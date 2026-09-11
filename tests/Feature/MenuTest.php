@@ -107,7 +107,7 @@ it('filters the index by search term', function () {
         ->assertOk()
         ->assertViewHas('menus', fn ($menus) => $menus->count() === 1
             && $menus->first()->slug === 'halal');
-});
+})->skip(fn () => ! onPostgres(), 'Search uses ilike, which only PostgreSQL supports.');
 
 it('regenerates the slug when the english name changes', function () {
     $menu = Menu::factory()->create(['name' => ['en' => 'Records', 'ru' => 'Записи'], 'slug' => 'records']);
@@ -244,7 +244,7 @@ it('filters the folders of a menu by name', function () {
         ->assertOk()
         ->assertViewHas('folders', fn ($folders) => $folders->count() === 1
             && $folders->first()->slug === 'pesticide-log');
-});
+})->skip(fn () => ! onPostgres(), 'Search uses ilike, which only PostgreSQL supports.');
 
 it('combines the category and name filters and ignores an unknown category', function () {
     $menu = Menu::factory()->create();
@@ -283,7 +283,7 @@ it('combines the category and name filters and ignores an unknown category', fun
         ->assertOk()
         ->assertViewHas('activeCategory', fn ($activeCategory) => $activeCategory === null)
         ->assertViewHas('folders', fn ($folders) => $folders->count() === 3);
-});
+})->skip(fn () => ! onPostgres(), 'Search uses ilike, which only PostgreSQL supports.');
 
 it('shows the create-folder tile to a moderator but not to a client', function () {
     $menu = Menu::factory()->create();

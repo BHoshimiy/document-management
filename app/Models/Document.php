@@ -71,6 +71,6 @@ class Document extends Model
             ->when($filters['company_id'] ?? null, fn ($q, $v) => $q->where('company_id', $v))
             ->when($filters['category_id'] ?? null, fn ($q, $v) => $q->where('category_id', $v))
             ->when($filters['document_folder_id'] ?? null, fn ($q, $v) => $q->where('document_folder_id', $v))
-            ->when($filters['search'] ?? null, fn ($q, $v) => $q->where('name', 'like', "%{$v}%"));
+            ->when($filters['search'] ?? null, fn ($q, $v) => $q->where('name', 'ilike', "%{$v}%"));
     }
 }

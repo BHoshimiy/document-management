@@ -21,7 +21,7 @@ class CompanyController extends Controller
             ->unless($request->user()->canManageCatalog(),
                 fn ($q) => $q->where('user_id', $request->user()->id))
             ->when($request->string('search')->toString(), fn ($q, $term) => $q->where(
-                fn ($sub) => $sub->where('name', 'like', "%{$term}%")->orWhere('inn', 'like', "%{$term}%")
+                fn ($sub) => $sub->where('name', 'ilike', "%{$term}%")->orWhere('inn', 'ilike', "%{$term}%")
             ))
             ->withCount('documents')
             ->with('user')
