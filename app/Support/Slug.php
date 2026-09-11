@@ -28,7 +28,7 @@ final class Slug
      * held by a soft-deleted row would still be rejected by the database:
      *
      *   Slug::uniqueFor(Menu::withTrashed(), 'Global GAP', $menu?->id)
-     *   Slug::uniqueFor(DocumentFolder::withTrashed()->where('menu_id', 3), $name)
+     *   Slug::uniqueFor(DocumentFolder::withTrashed(), $name)
      *
      * @template TModel of Model
      *

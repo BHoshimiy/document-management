@@ -46,15 +46,15 @@ class DocumentFolderRequest extends FormRequest
     }
 
     /**
-     * The slug is system-generated from the English name, never posted. It only
-     * has to be unique within its menu — the table is unique on (menu_id, slug).
+     * The slug is system-generated from the English name, never posted. It has to
+     * be unique table-wide — the folder page is routed as folders/{folder:slug}.
      * The route parameter is `folder`, renamed in routes/web.php.
      */
     protected function prepareForValidation(): void
     {
         $this->merge([
             'slug' => Slug::uniqueFor(
-                DocumentFolder::withTrashed()->where('menu_id', $this->integer('menu_id')),
+                DocumentFolder::withTrashed(),
                 (string) $this->input('name.en'),
                 $this->route('folder')?->id,
             ),

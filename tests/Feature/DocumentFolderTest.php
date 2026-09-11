@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('gives folders in different standards the same slug', function () {
+it('suffixes the slug when two folders in different standards share a name', function () {
     $admin = User::factory()->admin()->create();
 
     foreach (Menu::factory()->count(2)->create() as $menu) {
@@ -24,7 +24,7 @@ it('gives folders in different standards the same slug', function () {
             ->assertRedirect(route('admin.folders.index'));
     }
 
-    expect(DocumentFolder::pluck('slug')->all())->toBe(['records', 'records']);
+    expect(DocumentFolder::pluck('slug')->all())->toBe(['records', 'records-2']);
 });
 
 it('suffixes the slug for two folders in the same standard', function () {
@@ -248,4 +248,20 @@ it('groups the category options by menu on the create form', function () {
         ->assertSee('<optgroup label="GLOBAL GAP">', false)
         ->assertSee('Records')
         ->assertSee('GAP Checklists');
+});
+
+it('resolves the folder page by slug', function () {
+    $folder = DocumentFolder::factory()->create(['slug' => 'harvest-hygiene']);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get('/folders/harvest-hygiene')
+        ->assertOk()
+        ->assertViewHas('folder', fn ($f) => $f->is($folder));
+});
+
+it('builds the folder url from the slug, never the id', function () {
+    $folder = DocumentFolder::factory()->create(['slug' => 'harvest-hygiene']);
+
+    expect(route('folders.show', $folder))->toEndWith('/folders/harvest-hygiene')
+        ->and(route('documents.store', $folder))->toEndWith('/folders/harvest-hygiene/documents');
 });
