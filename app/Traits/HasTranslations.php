@@ -90,7 +90,7 @@ trait HasTranslations
     {
         return $query->where(function ($q) use ($column, $term) {
             foreach (config('app.supported_locales', ['en', 'ru']) as $locale) {
-                $q->orWhere("{$column}->{$locale}", 'like', "%{$term}%");
+                $q->orWhere("{$column}->{$locale}", 'ilike', "%{$term}%");
             }
         });
     }
