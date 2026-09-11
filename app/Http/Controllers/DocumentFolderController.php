@@ -35,6 +35,38 @@ class DocumentFolderController extends Controller
         return view('folders.show', compact('folder', 'documents', 'categories'));
     }
 
+    /** Create a folder from inside the menu page, returning there afterwards. */
+    public function createInMenu(Request $request, Menu $menu): View
+    {
+        $this->authorize('create', DocumentFolder::class);
+
+        $folder = new DocumentFolder;
+        $folder->menu_id = $menu->id;
+        $folder->category_id = $request->integer('category_id') ?: null;
+
+        return view('folders.create-in-menu', [
+            'folder' => $folder,
+            'menu' => $menu,
+            // A one-menu collection, so _form's optgroups offer only this menu's
+            // categories alongside the global defaults.
+            'menus' => collect([$menu->load('categories')]),
+            'globalCategories' => Category::query()->whereNull('menu_id')->defaults()->ordered()->get(),
+        ]);
+    }
+
+    public function storeInMenu(DocumentFolderRequest $request, Menu $menu): RedirectResponse
+    {
+        $this->authorize('create', DocumentFolder::class);
+
+        DocumentFolder::create($request->validated());
+
+        // Back to the unfiltered menu page, so the new folder is visible
+        // whichever category it landed in.
+        return redirect()
+            ->route('menus.show', $menu)
+            ->with('status', __('folders.created'));
+    }
+
     /* ---------------- admin CRUD ---------------- */
 
     public function index(): View
@@ -50,12 +82,18 @@ class DocumentFolderController extends Controller
         return view('folders.index', compact('folders'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('create', DocumentFolder::class);
 
+        // The menu page's create tile links here with the menu, and the active
+        // category pill, already chosen.
+        $folder = new DocumentFolder;
+        $folder->menu_id = $request->integer('menu_id') ?: null;
+        $folder->category_id = $request->integer('category_id') ?: null;
+
         return view('folders.create', [
-            'folder' => new DocumentFolder,
+            'folder' => $folder,
             'menus' => Menu::query()->with('categories')->ordered()->get(),
             'globalCategories' => Category::query()->whereNull('menu_id')->defaults()->ordered()->get(),
         ]);

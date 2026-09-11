@@ -41,6 +41,10 @@ Route::middleware(['auth', 'active.user', 'locale'])->group(function () {
     // Standards (menus) and their folders — the client-facing browse flow
     Route::get('menus/{menu:slug}', [MenuController::class, 'show'])->name('menus.show');
     Route::get('folders/{folder:slug}', [DocumentFolderController::class, 'show'])->name('folders.show');
+    Route::get('menus/{menu:slug}/folders/create', [DocumentFolderController::class, 'createInMenu'])
+        ->name('menus.folders.create');
+    Route::post('menus/{menu:slug}/folders', [DocumentFolderController::class, 'storeInMenu'])
+        ->name('menus.folders.store');
 
     // Document upload / download / delete
     Route::post('folders/{folder:slug}/documents', [DocumentController::class, 'store'])

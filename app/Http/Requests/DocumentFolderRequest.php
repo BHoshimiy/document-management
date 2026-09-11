@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\DocumentFolder;
+use App\Models\Menu;
 use App\Support\Slug;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,11 @@ class DocumentFolderRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        // The menu-scoped create route fixes the menu; the admin form posts it.
+        $menu = $this->route('menu');
+
         $this->merge([
+            'menu_id' => $menu instanceof Menu ? $menu->id : $this->input('menu_id'),
             'slug' => Slug::uniqueFor(
                 DocumentFolder::withTrashed(),
                 (string) $this->input('name.en'),

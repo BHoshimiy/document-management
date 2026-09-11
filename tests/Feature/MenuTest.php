@@ -284,3 +284,40 @@ it('combines the category and name filters and ignores an unknown category', fun
         ->assertViewHas('activeCategory', fn ($activeCategory) => $activeCategory === null)
         ->assertViewHas('folders', fn ($folders) => $folders->count() === 3);
 });
+
+it('shows the create-folder tile to a moderator but not to a client', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->moderator()->create())
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertSee('add-card');
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertDontSee('add-card');
+});
+
+it('points the create-folder tile at the menu and the active category', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->default()->create(['menu_id' => $menu->id]);
+
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->get(route('menus.show', ['menu' => $menu, 'category' => $category->slug]))
+        ->assertOk()
+        // assertSee escapes, matching the &amp; Blade writes into the href.
+        ->assertSee(route('menus.folders.create', [
+            'menu' => $menu,
+            'category_id' => $category->id,
+        ]));
+
+    // With no pill active the tile carries only the menu.
+    $this->actingAs($admin)
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertSee(route('menus.folders.create', ['menu' => $menu]))
+        ->assertDontSee('category_id=');
+});

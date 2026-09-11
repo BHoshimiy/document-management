@@ -1,8 +1,9 @@
 <aside class="sidebar">
     <div>
         <div class="brand">Certificate Center</div>
-        <div class="brand-sub">{!! __('app.brand_sub') !!}</div>
     </div>
+
+    <div class="nav-divider"></div>
 
     <div class="nav-group">
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -61,8 +62,9 @@
     <div class="sidebar-footer">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="logout-link">{{ __('app.sign_out') }}</button>
+            <button type="submit" class="logout-link">
+                {{ __('app.sign_out') }}
+            </button>
         </form>
-        <div>&copy; icofex · {{ __('app.document_manager') }}</div>
     </div>
 </aside>

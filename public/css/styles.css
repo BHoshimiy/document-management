@@ -627,6 +627,19 @@
 
   .search-box form, form.search-box{ position:relative; width:270px; }
   a.tab-pill{ text-decoration:none; display:inline-block; }
+  a.add-card{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; height:100%; min-height:170px; padding:18px;
+    border:1.5px dashed var(--line); border-radius:14px;
+    color:var(--ink-soft); font-weight:600; font-size:.9rem;
+    text-align:center; text-decoration:none;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  a.add-card:hover{ border-color:var(--forest-accent); color:var(--forest-800); background:var(--paper); }
+  a.add-card .glyph{
+    width:38px; height:38px; border-radius:12px; background:var(--sage-badge);
+    display:flex; align-items:center; justify-content:center;
+  }
   .search-box input{ width:100%; }
 
   .btn-pin-danger{ color:var(--rust); border-color:var(--line); background:var(--paper); cursor:pointer; }

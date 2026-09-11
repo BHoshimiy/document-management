@@ -3,10 +3,12 @@
 
 @section('content')
     <x-page-header
-        :title="$menu->name"
-        :subtitle="trans_choice('app.folder_count', $folders->count())"
-        :back="route('dashboard')"
-        :backLabel="__('app.back_to_library')" />
+            :title="$menu->name"
+            :menu="$menu"
+            :active-category="$activeCategory"
+            :subtitle="trans_choice('app.folder_count', $folders->count())"
+            :back="route('dashboard')"
+            :backLabel="__('app.back_to_library')"/>
 
     <div class="toolbar">
         <div>
@@ -17,33 +19,31 @@
                    class="tab-pill @if ($activeCategory?->is($category)) active @endif">{{ $category->name }}</a>
             @endforeach
         </div>
-        <x-search-box
-            :action="route('menus.show', $menu)"
-            :placeholder="__('app.search_folders')"
-            :hidden="['category' => $activeCategory?->slug]" />
     </div>
 
     <div class="row g-3">
-        @forelse ($folders as $folder)
+        @foreach($folders as $folder)
             <div class="col-12 col-sm-6 col-lg-4">
                 <x-doc-card
-                    :code="$folder->code"
-                    :title="$folder->name"
-                    :meta="trans_choice('app.document_count', $folder->documents_count)">
+                        :code="$folder->code"
+                        :title="$folder->name"
+                        :meta="trans_choice('app.document_count', $folder->documents_count)">
                     <x-slot:actions>
                         <span></span>
                         <a href="{{ route('folders.show', $folder) }}" class="btn-open">{{ __('app.open') }}</a>
                     </x-slot:actions>
                 </x-doc-card>
             </div>
-        @empty
-            <div class="col-12">
-                <div class="empty-state">
-                    <div class="glyph"><x-icon name="search" /></div>
-                    <div class="empty-title">{{ __('app.no_folders') }}</div>
-                    <div class="empty-sub">{{ __('app.no_folders_sub') }}</div>
-                </div>
+        @endforeach
+
+        @can('create', \App\Models\DocumentFolder::class)
+            <div class="col-12 col-sm-6 col-lg-4">
+                <a class="add-card"
+                   href="{{ route('menus.folders.create', ['menu' => $menu, 'category_id' => $activeCategory?->id]) }}">
+                    <span class="glyph"><x-icon name="plus"/></span>
+                    {{ __('app.create_folder') }}
+                </a>
             </div>
-        @endforelse
+        @endcan
     </div>
 @endsection

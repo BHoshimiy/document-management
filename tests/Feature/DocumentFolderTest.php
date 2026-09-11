@@ -265,3 +265,110 @@ it('builds the folder url from the slug, never the id', function () {
     expect(route('folders.show', $folder))->toEndWith('/folders/harvest-hygiene')
         ->and(route('documents.store', $folder))->toEndWith('/folders/harvest-hygiene/documents');
 });
+
+it('preselects the menu and category on the create form from the query', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->default()->create(['menu_id' => $menu->id]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.folders.create', ['menu_id' => $menu->id, 'category_id' => $category->id]))
+        ->assertOk()
+        ->assertViewHas('folder', fn ($folder) => $folder->menu_id === $menu->id
+            && $folder->category_id === $category->id);
+});
+
+it('leaves the create form unset when no menu or category is passed', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.folders.create'))
+        ->assertOk()
+        ->assertViewHas('folder', fn ($folder) => $folder->menu_id === null
+            && $folder->category_id === null);
+});
+
+it('omits the menu field on the menu-scoped create form', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.folders.create', $menu))
+        ->assertOk()
+        ->assertDontSee('name="menu_id"', false)
+        ->assertViewHas('folder', fn ($folder) => $folder->menu_id === $menu->id);
+});
+
+it('offers the menu-scoped form only this menus categories and the global defaults', function () {
+    $menu = Menu::factory()->create();
+
+    $globalDefault = Category::factory()->default()->create(['name' => ['en' => 'Records', 'ru' => 'Записи']]);
+    $ownCategory = Category::factory()->create([
+        'menu_id' => $menu->id,
+        'name' => ['en' => 'GAP Checklists', 'ru' => 'Чек-листы ГАП'],
+    ]);
+    $otherMenuCategory = Category::factory()->for(Menu::factory())->create([
+        'name' => ['en' => 'Halal Certificates', 'ru' => 'Сертификаты халяль'],
+    ]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.folders.create', $menu))
+        ->assertOk()
+        ->assertSee($globalDefault->name)
+        ->assertSee($ownCategory->name)
+        ->assertDontSee($otherMenuCategory->name);
+});
+
+it('preselects the category the tile passed to the menu-scoped form', function () {
+    $menu = Menu::factory()->create();
+    $category = Category::factory()->default()->create(['menu_id' => $menu->id]);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.folders.create', ['menu' => $menu, 'category_id' => $category->id]))
+        ->assertOk()
+        ->assertViewHas('folder', fn ($folder) => $folder->category_id === $category->id);
+});
+
+it('returns to the menu page after creating a folder there', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('menus.folders.store', $menu), [
+            'name' => ['en' => 'Harvest Hygiene', 'ru' => 'Гигиена при сборе урожая'],
+            'code' => 'RP-HRV-01',
+        ])
+        ->assertRedirect(route('menus.show', $menu));
+
+    expect(DocumentFolder::sole())
+        ->menu_id->toBe($menu->id)
+        ->code->toBe('RP-HRV-01');
+});
+
+it('ignores a posted menu_id on the menu-scoped store route', function () {
+    $menu = Menu::factory()->create();
+    $otherMenu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('menus.folders.store', $menu), [
+            'menu_id' => $otherMenu->id,
+            'name' => ['en' => 'Harvest Hygiene', 'ru' => 'Гигиена при сборе урожая'],
+            'code' => 'RP-HRV-01',
+        ])
+        ->assertRedirect(route('menus.show', $menu));
+
+    expect(DocumentFolder::sole()->menu_id)->toBe($menu->id);
+});
+
+it('forbids a client from using the menu-scoped create routes', function () {
+    $menu = Menu::factory()->create();
+    $client = User::factory()->create();
+
+    $this->actingAs($client)
+        ->get(route('menus.folders.create', $menu))
+        ->assertForbidden();
+
+    $this->actingAs($client)
+        ->post(route('menus.folders.store', $menu), [
+            'name' => ['en' => 'Harvest Hygiene', 'ru' => 'Гигиена при сборе урожая'],
+            'code' => 'RP-HRV-01',
+        ])
+        ->assertForbidden();
+
+    expect(DocumentFolder::count())->toBe(0);
+});
