@@ -19,8 +19,8 @@ class CategoryController extends Controller implements HasMiddleware
     /**
      * Resource-wide authorization, the same ability map authorizeResource()
      * used to register from the constructor. Laravel dropped controller
-     * instance middleware, so it is declared here. `reorder` is not a resource
-     * ability and authorizes inline.
+     * instance middleware, so it is declared here. `reorder`, `createInMenu`
+     * and `storeInMenu` are not resource abilities and authorize inline.
      *
      * @return list<Middleware>
      */
@@ -36,6 +36,31 @@ class CategoryController extends Controller implements HasMiddleware
     }
 
     public function __construct(private readonly CategoryService $categories) {}
+
+    /** Create a category from inside the menu page, returning there afterwards. */
+    public function createInMenu(Menu $menu): View
+    {
+        $this->authorize('create', Category::class);
+
+        $category = new Category;
+        $category->menu_id = $menu->id;
+
+        return view('categories.create-in-menu', compact('category', 'menu'));
+    }
+
+    public function storeInMenu(CategoryRequest $request, Menu $menu): RedirectResponse
+    {
+        $this->authorize('create', Category::class);
+
+        $this->categories->create($request->validated());
+
+        // Back to the unfiltered menu page, where the new pill is now offered.
+        return redirect()
+            ->route('menus.show', $menu)
+            ->with('status', __('categories.created'));
+    }
+
+    /* ---------------- admin CRUD ---------------- */
 
     public function index(Request $request): View
     {

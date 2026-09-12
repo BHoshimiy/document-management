@@ -18,6 +18,11 @@
                 <a href="{{ route('menus.show', ['menu' => $menu, 'category' => $category->slug, 'search' => $search ?: null]) }}"
                    class="tab-pill @if ($activeCategory?->is($category)) active @endif">{{ $category->name }}</a>
             @endforeach
+            @can('create', \App\Models\Category::class)
+                <a href="{{ route('menus.categories.create', $menu) }}" class="tab-pill tab-pill-add">
+                    <x-icon name="plus"/> {{ __('app.create_category') }}
+                </a>
+            @endcan
         </div>
     </div>
 

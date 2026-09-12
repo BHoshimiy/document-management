@@ -299,6 +299,29 @@ it('shows the create-folder tile to a moderator but not to a client', function (
         ->assertDontSee('add-card');
 });
 
+it('shows the create-category pill to a moderator but not to a client', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->moderator()->create())
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertSee('tab-pill-add');
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertDontSee('tab-pill-add');
+});
+
+it('points the create-category pill at the menu-scoped route', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertSee(route('menus.categories.create', $menu));
+});
+
 it('points the create-folder tile at the menu and the active category', function () {
     $menu = Menu::factory()->create();
     $category = Category::factory()->default()->create(['menu_id' => $menu->id]);

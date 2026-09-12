@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\Category;
+use App\Models\Menu;
 use App\Support\Slug;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -31,7 +32,11 @@ class CategoryRequest extends FormRequest
     /** The slug is system-generated from the English name, never posted. */
     protected function prepareForValidation(): void
     {
+        // The menu-scoped create route fixes the menu; the admin form posts it.
+        $menu = $this->route('menu');
+
         $this->merge([
+            'menu_id' => $menu instanceof Menu ? $menu->id : $this->input('menu_id'),
             'slug' => Slug::uniqueFor(
                 Category::withTrashed(),
                 (string) $this->input('name.en'),

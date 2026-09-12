@@ -45,6 +45,10 @@ Route::middleware(['auth', 'active.user', 'locale'])->group(function () {
         ->name('menus.folders.create');
     Route::post('menus/{menu:slug}/folders', [DocumentFolderController::class, 'storeInMenu'])
         ->name('menus.folders.store');
+    Route::get('menus/{menu:slug}/categories/create', [CategoryController::class, 'createInMenu'])
+        ->name('menus.categories.create');
+    Route::post('menus/{menu:slug}/categories', [CategoryController::class, 'storeInMenu'])
+        ->name('menus.categories.store');
 
     // Document upload / download / delete
     Route::post('folders/{folder:slug}/documents', [DocumentController::class, 'store'])

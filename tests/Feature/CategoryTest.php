@@ -125,3 +125,76 @@ it('shows the standard of a category on the index', function () {
         ->assertOk()
         ->assertSee('GLOBAL GAP');
 });
+
+/* ---------------- the menu-scoped create flow ---------------- */
+
+it('renders the menu-scoped create form without the menu selector', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('menus.categories.create', $menu))
+        ->assertOk()
+        ->assertDontSee('name="menu_id"', false)
+        ->assertViewHas('category', fn ($category) => $category->menu_id === $menu->id);
+});
+
+it('returns to the menu page after creating a category there', function () {
+    $menu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('menus.categories.store', $menu), [
+            'name' => ['en' => 'GAP checklists', 'ru' => 'Чек-листы ГАП'],
+        ])
+        ->assertRedirect(route('menus.show', $menu))
+        ->assertSessionHas('status');
+
+    expect(Category::sole())
+        ->menu_id->toBe($menu->id)
+        ->slug->toBe('gap-checklists');
+});
+
+it('ignores a posted menu_id on the menu-scoped store route', function () {
+    $menu = Menu::factory()->create();
+    $otherMenu = Menu::factory()->create();
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->post(route('menus.categories.store', $menu), [
+            'menu_id' => $otherMenu->id,
+            'name' => ['en' => 'GAP checklists', 'ru' => 'Чек-листы ГАП'],
+        ])
+        ->assertRedirect(route('menus.show', $menu));
+
+    expect(Category::sole()->menu_id)->toBe($menu->id);
+});
+
+it('offers the newly created category as a pill on the menu page', function () {
+    $menu = Menu::factory()->create();
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->post(route('menus.categories.store', $menu), [
+            'name' => ['en' => 'GAP checklists', 'ru' => 'Чек-листы ГАП'],
+        ]);
+
+    $this->actingAs($admin)
+        ->get(route('menus.show', $menu))
+        ->assertOk()
+        ->assertSee('GAP checklists');
+});
+
+it('forbids a client from using the menu-scoped create routes', function () {
+    $menu = Menu::factory()->create();
+    $client = User::factory()->create();
+
+    $this->actingAs($client)
+        ->get(route('menus.categories.create', $menu))
+        ->assertForbidden();
+
+    $this->actingAs($client)
+        ->post(route('menus.categories.store', $menu), [
+            'name' => ['en' => 'GAP checklists', 'ru' => 'Чек-листы ГАП'],
+        ])
+        ->assertForbidden();
+
+    expect(Category::count())->toBe(0);
+});
