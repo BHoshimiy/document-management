@@ -1,6 +1,6 @@
 # icofex — Document Management (Laravel + Blade)
 
-Laravel **13.x** · PHP **8.3+** · session auth · server-rendered Blade · MySQL 8 / PostgreSQL 15.
+Laravel **13.x** · PHP **8.4+** · session auth · server-rendered Blade · MySQL 8 / PostgreSQL 15.
 
 Server-rendered version of the app: no JSON API, no SPA. Every page is a Blade view, every mutation is a normal HTML `<form>` POST with CSRF and a redirect-with-flash afterwards.
 

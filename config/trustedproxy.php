@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+//declare(strict_types=1);
 
 // Proxies whose X-Forwarded-* headers are trusted. Empty = trust none.
 // Set to "*" for a local ngrok/tunnel so https is detected; in production list the

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`icofex/document-manager` — a certification-document library. PHP 8.3, Laravel 13, Composer only (no npm/vite/mix). Server-rendered Blade + Bootstrap 5, session auth on `username` (not email). No API routes, no queues, no jobs, no events.
+`icofex/document-manager` — a certification-document library. PHP 8.4 (Symfony 8 inside Laravel 13 requires >= 8.4.1), Laravel 13, Composer only (no npm/vite/mix). Server-rendered Blade + Bootstrap 5, session auth on `username` (not email). No API routes, no queues, no jobs, no events.
 
 Domain hierarchy: `Menu` (a standard, e.g. Global GAP) → `DocumentFolder` (has a `code` like `RP-FER-01`) → `Document`, tagged with a `Category`. A `Category` is optionally scoped to a `Menu` (`categories.menu_id`, nullable = global) — `Menu` has many categories directly; a folder page offers the global categories plus the ones of its own menu (`Category::scopeForMenu`). A `DocumentFolder` in turn carries an optional `category_id`, which `DocumentFolderRequest` validates as global-or-same-menu. The UI calls a `Menu` a "menu" everywhere, but the lang keys are still named `app.standard*` — wording only moved, keys did not. Each client `User` has one `Company`; documents belong to a company.
 
