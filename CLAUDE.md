@@ -76,6 +76,7 @@ SESSION_DRIVER=database   # the sessions table ships inside the users migration
 CACHE_STORE=file          # there is no cache table, so never point this at database
 QUEUE_CONNECTION=sync     # no jobs table either
 DB_CONNECTION=sqlite      # local default; mysql/pgsql for the real targets
+TRUSTED_PROXIES=          # "*" when serving through ngrok/a tunnel so X-Forwarded-Proto is honoured; empty otherwise
 ```
 
 Plus `'supported_locales' => ['en', 'ru'],` in `config/app.php` (consumed by `SetLocale` and `HasTranslations::scopeWhereTranslationLike`, both defaulting to `['en','ru']` if absent).
